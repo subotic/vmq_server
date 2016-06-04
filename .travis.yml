@@ -1,9 +1,21 @@
+# only pull the last 5 commits (faster)
+git:
+  depth: 5
+  
+# makes sure that Travis provisions a vm and not a docker container
 sudo: required
+
+# Ubuntu 14.04 (defines the type of the linux vm)
 dist: trusty
-language: erlang
-install: true
-otp_release:
-    - 17.5
-    - 18.3
-before_script: "epmd -daemon"
-script: "./rebar3 ct"
+
+# spins up the docker daemon
+services:
+  - docker
+
+# build the docker image
+before_install:
+  - docker build -t vmq_server .
+
+# run build and tests inside a docker vm
+script:
+  - docker run vmq_server /bin/sh -c "epmd -daemon; ./rebar3 ct"
